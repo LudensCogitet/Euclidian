@@ -77,6 +77,9 @@ while not done:
                 points = []
                 Circle.num_circles = 0
                 figures = []
+            if event.key == pygame.K_s:
+                if event.mod == pygame.KMOD_LCTRL:
+                    pygame.image.save(screen,"./save.png")
             
                                 
         if event.type == pygame.QUIT:
@@ -85,8 +88,9 @@ while not done:
     screen.fill((0,0,0))
 
     if select_point != None:
-        x_dist = event.pos[0] - select_point.x 
-        y_dist = event.pos[1] - select_point.y
+        mouse_pos = pygame.mouse.get_pos()
+        x_dist = mouse_pos[0] - select_point.x 
+        y_dist = mouse_pos[1] - select_point.y
         radius = int(math.sqrt(x_dist*x_dist + y_dist*y_dist))
 
         if radius < 2:
