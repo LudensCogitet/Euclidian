@@ -83,72 +83,89 @@ done = False
 while not done:
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
+            print("BING")
+            print(event.button)
+            if event.button == 3:
+                print("HERE")
                 if tool == "circle":
-                    hit = False
-                    target = None
-                    for point in points:
-                        if point.target.collidepoint(event.pos[0],event.pos[1]):
-                            #print("This is point number: " + str(point.num))
-                            if select_point == None:
-                                select_point = point
-                            else:
-                                target = (point.x -select_point.x, point.y -select_point.y)
-                            hit = True
-                            break
-                    if hit == False:
+                    tool = "line"
+                elif tool == "line":
+                    tool = "circle"
+            elif event.button == 1:
+                print(tool)
+                newFigure = None
+                hit = False
+                target = None
+                for point in points:
+                    if point.target.collidepoint(event.pos[0],event.pos[1]):
+                        #print("This is point number: " + str(point.num))
                         if select_point == None:
-                            select_point = Point(event.pos[0],event.pos[1],(200,0,0))
-                            points.append(select_point)
-                        elif target == None:
-                            target = (event.pos[0] - select_point.x, event.pos[1] - select_point.y)
-                    
-                    
+                            select_point = point
+                        else:
+                            target = (point.x -select_point.x, point.y -select_point.y)
+                        hit = True
+                        break
+                if hit == False:
+                    if select_point == None:
+                        select_point = Point(event.pos[0],event.pos[1],(200,0,0))
+                        points.append(select_point)
+                    elif target == None:
+                        target = (event.pos[0] - select_point.x, event.pos[1] - select_point.y)
+
+                if tool == "line":
+                    if select_point != None and target != None:
+                        target_point = Point(target[0],target[1],(200,0,0))
+                        points.append(target_point)
+                        newFigure = Line((select_point,target_point),(0,0,0))
+                        
+                if tool == "circle":
                     if select_point != None and target != None:
                         radius = int(math.sqrt(target[0]*target[0] + target[1]*target[1])+1)
 
-                        newCircle = Circle(select_point,radius,(0,0,0))
-                        for figure in figures:
-                            if newCircle.rect.colliderect(figure.rect):
-                                offset_x = min(newCircle.rect.x, figure.rect.x)
-                                offset_y = min(newCircle.rect.y, figure.rect.y)
+                        newFigure = Circle(select_point,radius,(0,0,0))
+                
+                if newFigure != None:
+                    for figure in figures:
+                        if newFigure.rect.colliderect(figure.rect):
+                            offset_x = min(newFigure.rect.x, figure.rect.x)
+                            offset_y = min(newFigure.rect.y, figure.rect.y)
 
-                                
-                                
-                                width = max(newCircle.rect.left + newCircle.rect.width, figure.rect.left + figure.rect.width)
-                                width = width - offset_x
-                                height = max(newCircle.rect.top + newCircle.rect.height, figure.rect.top + figure.rect.height)
-                                height = height - offset_y
+                            
+                            
+                            width = max(newFigure.rect.left + newFigure.rect.width, figure.rect.left + figure.rect.width)
+                            width = width - offset_x
+                            height = max(newFigure.rect.top + newFigure.rect.height, figure.rect.top + figure.rect.height)
+                            height = height - offset_y
 
-                                tempSurf1 = pygame.Surface((width,height),pygame.SRCALPHA,32)
-                                tempSurf1.convert_alpha()
+                            tempSurf1 = pygame.Surface((width,height),pygame.SRCALPHA,32)
+                            tempSurf1.convert_alpha()
 
-                                tempSurf2 = tempSurf1.copy()
+                            tempSurf2 = tempSurf1.copy()
 
-                                newCircle.draw(tempSurf1,(newCircle.rect.x - offset_x, newCircle.rect.y - offset_y))
-                                figure.draw(tempSurf2, (figure.rect.x - offset_x, figure.rect.y - offset_y))
+                            newFigure.draw(tempSurf1,(newFigure.rect.x - offset_x, newFigure.rect.y - offset_y))
+                            figure.draw(tempSurf2, (figure.rect.x - offset_x, figure.rect.y - offset_y))
 
-                                overlap = pygame.mask.from_surface(tempSurf1).overlap_mask(pygame.mask.from_surface(tempSurf2),(0,0))
-                   
-                                size = overlap.get_size()
-                                #print("overlap count" + str(overlap.count()))
-                                for x in range(size[0]):
-                                    for y in range(size[1]):
-                                        if overlap.get_at((x,y)) != 0:
-                                            newPoint = Point(x+offset_x,y+offset_y,(200,0,0))
-                                            collision = False
-                                            for point in points:
-                                                if newPoint.collide.colliderect(point.collide) or newPoint.collide.contains(point.collide):
-                                                    #print("collision")
-                                                    collision = True
-                                                    break
-                                            if collision == False:
-                                                points.append(newPoint)
-                                            else:
-                                                Point.num_points = Point.num_points - 1
-                               
-                        figures.append(newCircle)
-                        select_point = None
+                            overlap = pygame.mask.from_surface(tempSurf1).overlap_mask(pygame.mask.from_surface(tempSurf2),(0,0))
+               
+                            size = overlap.get_size()
+                            #print("overlap count" + str(overlap.count()))
+                            for x in range(size[0]):
+                                for y in range(size[1]):
+                                    if overlap.get_at((x,y)) != 0:
+                                        newPoint = Point(x+offset_x,y+offset_y,(200,0,0))
+                                        collision = False
+                                        for point in points:
+                                            if newPoint.collide.colliderect(point.collide) or newPoint.collide.contains(point.collide):
+                                                #print("collision")
+                                                collision = True
+                                                break
+                                        if collision == False:
+                                            points.append(newPoint)
+                                        else:
+                                            Point.num_points = Point.num_points - 1
+                           
+                    figures.append(newFigure)
+                    select_point = None
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_c:
@@ -168,14 +185,19 @@ while not done:
 
     if select_point != None:
         mouse_pos = pygame.mouse.get_pos()
-        x_dist = mouse_pos[0] - select_point.x 
-        y_dist = mouse_pos[1] - select_point.y
-        radius = int(math.sqrt(x_dist*x_dist + y_dist*y_dist))
 
-        if radius < 2:
-            radius = 2
+        if tool == "line":
+            pygame.draw.line(screen,(0,0,0),(select_point.x,select_point.y),mouse_pos)
         
-        pygame.draw.circle(screen,(0,0,0),(select_point.x,select_point.y),radius,2)
+        elif tool == "circle":
+            x_dist = mouse_pos[0] - select_point.x 
+            y_dist = mouse_pos[1] - select_point.y
+            radius = int(math.sqrt(x_dist*x_dist + y_dist*y_dist))
+
+            if radius < 2:
+                radius = 2
+            
+            pygame.draw.circle(screen,(0,0,0),(select_point.x,select_point.y),radius,3)
     
     for figure in figures:
         figure.draw(screen)
